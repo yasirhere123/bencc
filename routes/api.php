@@ -45,12 +45,18 @@ Route::any('/eventlist', [eventcontroller::class, 'eventlist']);
 Route::any('/eventdetail', [eventcontroller::class, 'eventdetail']);
 Route::any('/searchevent', [eventcontroller::class, 'searchevent']);
 Route::any('/sendemail', [eventcontroller::class, 'sendemail']);
+Route::any('/eventbystatus', [eventcontroller::class, 'eventbystatus']);
+Route::any('/approvedeclineevent', [eventcontroller::class, 'approvedeclineevent']);
+Route::any('/eventbymonthyear', [eventcontroller::class, 'eventbymonthyear']);
+Route::any('/eventbydate', [eventcontroller::class, 'eventbydate']);
 
 
 
 Route::any('/login', [loginController::class, 'login']);
 Route::group(['middleware' => ['jwt.verify']],   function() {
 Route::any('/logout', [loginController::class, 'logout']);
+Route::any('/getUser', [loginController::class, 'getUser']);
+
 
 });
 
