@@ -14,6 +14,8 @@ class eventcontroller extends Controller
 {
     public function submitevent(request $request)
     {
+
+
         $validate = Validator::make($request->all(), [
             'event_title' => 'required',
             'event_description' => 'required',
@@ -31,17 +33,19 @@ class eventcontroller extends Controller
             return response()->json($validate->errors(), 400);
         }
 
-        $event_startdate = date('Y-m-d', strtotime($request->event_startdate));
-        $event_enddate = date('Y-m-d', strtotime($request->event_enddate));
-        $event_starttime = date('h:i:s a', strtotime($request->event_startdate));
-        $event_endtime = date('h:i:s a', strtotime($request->event_enddate));
+        $event_startdate =   date('Y-m-d',strtotime($request->event_startdate));
+        $event_enddate =     date('Y-m-d',strtotime($request->event_enddate));
+        $event_starttime =   date('h:i:s a', strtotime($request->event_startdate));
+        $event_endtime =     date('h:i:s a', strtotime($request->event_enddate));
+        
 
 
-        $recurrence_startdate = date('Y-m-d', strtotime($request->recurrence_startdate));
-        $recurrence_enddate = date('Y-m-d', strtotime($request->recurrence_enddate));
-        $recurrence_starttime = date('h:i:s a', strtotime($request->recurrence_startdate));
-        $recurrence_endtime = date('h:i:s a', strtotime($request->recurrence_enddate));
-        // $request->recurrence_enddate =  date('Y-m-d',strtotime($request->recurrence_enddate));
+
+        $recurrence_startdate =  date('Y-m-d',strtotime($request->recurrence_startdate));
+        $recurrence_enddate =  date('Y-m-d',strtotime($request->recurrence_enddate));
+        $recurrence_starttime =  date('h:i:s a',strtotime($request->recurrence_startdate));
+        $recurrence_endtime =   date('h:i:s a', strtotime($request->recurrence_enddate));
+                // $request->recurrence_enddate =  date('Y-m-d',strtotime($request->recurrence_enddate));
 
         $event = [
             'event_title' => $request->event_title,
@@ -55,7 +59,7 @@ class eventcontroller extends Controller
             'event_Website' => $request->event_Website,
             'event_cost' => $request->event_cost,
             'is_event_allday' => $request->is_event_allday,
-            'event_startdate' => $event_startdate,
+            'event_startdate' =>  $event_startdate,
             'event_enddate' => $event_enddate,
             'event_starttime' => $event_starttime,
             'event_endtime' => $event_endtime,
@@ -63,7 +67,7 @@ class eventcontroller extends Controller
             'created_at' => date('Y-m-d h:i:s'),
 
         ];
-
+        
         $event = DB::table('event')->insertGetId($event);
         $eventid = $event;
 
@@ -78,26 +82,25 @@ class eventcontroller extends Controller
                 ->update(['event_image' => $eventimages]);
         }
 
-        //getAllDatesInRange function for daily
-        function getAllDatesInRange($startDate, $endDate)
-        {
+         //getAllDatesInRange function for daily
+         function getAllDatesInRange($startDate, $endDate) {
             $start = Carbon::parse($startDate);
             $end = Carbon::parse($endDate);
-
+        
             $resultDates = [];
-
+        
             while ($start->lte($end)) {
                 $resultDates[] = $start->toDateString();
                 $start->addDay(); // Move to the next day
             }
-
+        
             return $resultDates;
         }
 
+        
+       
 
-
-
-        //getWeekdaysBetweenDates function for weeks
+         //getWeekdaysBetweenDates function for weeks
         function getWeekdaysBetweenDates($startDate, $endDate, $weekdays)
         {
             $startDate = Carbon::parse($startDate);
@@ -115,7 +118,7 @@ class eventcontroller extends Controller
             return $dates;
         }
 
-        //calculateSpecificDaysOfMonth function for Months
+         //calculateSpecificDaysOfMonth function for Months
 
         function calculateSpecificDaysOfMonth($startDate, $endDate, $specificDays)
         {
@@ -144,7 +147,7 @@ class eventcontroller extends Controller
 
             return $dates;
         }
-        //getTargetMonthsAndDates function for Year
+         //getTargetMonthsAndDates function for Year
 
         function getTargetMonthsAndDates($startDate, $endDate, $targetMonths, $targetDates)
         {
@@ -185,55 +188,58 @@ class eventcontroller extends Controller
                 'is_event_allday' => $request->is_event_allday,
                 'event_startdate' => $recurrence_startdate,
                 'event_enddate' => $recurrence_enddate,
-                'event_starttime' => $recurrence_starttime,
-                'event_endtime' => $recurrence_endtime,
+                'event_starttime' =>  $recurrence_starttime,
+                'event_endtime' =>  $recurrence_endtime,
                 'event_timezone' => $request->event_timezone,
                 'event_image' => $eventimages ?? null,
                 'created_at' => date('Y-m-d h:i:s'),
 
             ];
-
+            
             $event = DB::table('event')->insertGetId($once);
-        } else if ($request->event_type == 'daily') {
-            $startDate = $recurrence_startdate;
-            $endDate = $recurrence_enddate;
-            $allDates = getAllDatesInRange($startDate, $endDate);
+        }
+        else if ($request->event_type == 'daily')
+         {
+        $startDate = $recurrence_startdate;
+        $endDate = $recurrence_enddate;
+        $allDates = getAllDatesInRange($startDate, $endDate);
 
-            $dates = [];
-            foreach ($allDates as $date) {
-                $dates[] = [
-                    'date' => $date,
-                ];
-            }
+        $dates = [];
+        foreach ($allDates as $date) {
+            $dates[] = [
+                'date' => $date,
+            ];
+        } 
             if (!empty($dates)) {
                 foreach ($dates as $date) {
-                    $days = [
-                        'event_title' => $request->event_title,
-                        'event_description' => $request->event_description,
-                        'event_tags' => json_encode($request->event_tags),
-                        'event_Categories' => json_encode($request->evevnt_Categories),
-                        'event_status' => 1,
-                        'event_city' => $request->event_city,
-                        'venue_detail' => json_encode($request->venue_detail),
-                        'organizer_detail' => json_encode($request->organizer_detail),
-                        'event_Website' => $request->event_Website,
-                        'event_cost' => $request->event_cost,
-                        'is_event_allday' => $request->is_event_allday,
-                        'event_startdate' => $date['date'],
-                        'event_enddate' => $date['date'],
-                        'event_starttime' => $recurrence_starttime,
-                        'event_endtime' => $recurrence_endtime,
-                        'event_timezone' => $request->event_timezone,
-                        'event_image' => $eventimages ?? null,
-                        'created_at' => date('Y-m-d h:i:s'),
+            $days = [
+                'event_title' => $request->event_title,
+                'event_description' => $request->event_description,
+                'event_tags' => json_encode($request->event_tags),
+                'event_Categories' => json_encode($request->evevnt_Categories),
+                'event_status' => 1,
+                'event_city' => $request->event_city,
+                'venue_detail' => json_encode($request->venue_detail),
+                'organizer_detail' => json_encode($request->organizer_detail),
+                'event_Website' => $request->event_Website,
+                'event_cost' => $request->event_cost,
+                'is_event_allday' => $request->is_event_allday,
+                'event_startdate' => $date['date'],
+                'event_enddate' => $date['date'],
+                'event_starttime' =>  $recurrence_starttime,
+                'event_endtime' =>  $recurrence_endtime,
+                'event_timezone' => $request->event_timezone,
+                'event_image' => $eventimages ?? null,
+                'created_at' => date('Y-m-d h:i:s'),
 
-                    ];
+            ];
+            
 
-
-                    $event = DB::table('event')->insertGetId($days);
-                }
-            }
-        } else if ($request->event_type == 'weekly') {
+            $event = DB::table('event')->insertGetId($days);
+        }
+        }
+        }     
+        else if ($request->event_type == 'weekly') {
             $data = [];
             foreach ($request->daydate as $row) {
                 $data[] = intval($row);
@@ -269,8 +275,8 @@ class eventcontroller extends Controller
                         'is_event_allday' => $request->is_event_allday,
                         'event_startdate' => $date['date'],
                         'event_enddate' => $date['date'],
-                        'event_starttime' => $recurrence_starttime,
-                        'event_endtime' => $recurrence_endtime,
+                        'event_starttime' =>  $recurrence_starttime,
+                        'event_endtime' =>  $recurrence_endtime,
                         'event_timezone' => $request->event_timezone,
                         'event_image' => $eventimages ?? null,
                         'created_at' => date('Y-m-d h:i:s'),
@@ -319,8 +325,8 @@ class eventcontroller extends Controller
                         'is_event_allday' => $request->is_event_allday,
                         'event_startdate' => $date['date'],
                         'event_enddate' => $date['date'],
-                        'event_starttime' => $recurrence_starttime,
-                        'event_endtime' => $recurrence_endtime,
+                        'event_starttime' =>  $recurrence_starttime,
+                        'event_endtime' =>  $recurrence_endtime,
                         'event_timezone' => $request->event_timezone,
                         'event_image' => $eventimages ?? null,
                         'created_at' => date('Y-m-d h:i:s'),
@@ -373,8 +379,8 @@ class eventcontroller extends Controller
                         'is_event_allday' => $request->is_event_allday,
                         'event_startdate' => $date['date'],
                         'event_enddate' => $date['date'],
-                        'event_starttime' => $recurrence_starttime,
-                        'event_endtime' => $recurrence_endtime,
+                        'event_starttime' =>  $recurrence_starttime,
+                        'event_endtime' =>  $recurrence_endtime,
                         'event_timezone' => $request->event_timezone,
                         'event_image' => $eventimages ?? null,
                         'created_at' => date('Y-m-d h:i:s'),
@@ -385,10 +391,10 @@ class eventcontroller extends Controller
 
             }
         }
-
+        
         $mailData = [
-            'startdate' => date('Y-M-d h:i:s a', strtotime($event_startdate . ' ' . $event_starttime)),
-            'enddate' => date('Y-M-d h:i:s a', strtotime($event_starttime . ' ' . $event_endtime)),
+            'startdate' => date('Y-M-d h:i:s a',strtotime($event_startdate . ' ' . $event_starttime)),
+            'enddate'  => date('Y-M-d h:i:s a',strtotime($event_starttime . ' ' . $event_endtime)),
             'event_title' => $request->event_title,
             'event_description' => $request->event_description,
             'imagename' => $eventimages ?? null,
@@ -396,9 +402,9 @@ class eventcontroller extends Controller
 
         // Mail::to('carl@neo-techie.com')->send(new DemoMail($mailData));
         Mail::to('yasirshahpk8@gmail.com')->send(new DemoMail($mailData));
+        
 
-
-        return response()->json(['message' => 'Event Submitted Succesfully'], 200);
+         return response()->json(['message' => 'Event Submitted Succesfully'], 200);
 
     }
 
@@ -455,49 +461,46 @@ class eventcontroller extends Controller
             ? response()->json(['message' => 'no event available'], 404)
             : response()->json(['data' => $events, 'imagepath' => $imagepath, 'message' => 'Events'], 200);
     }
-
-    public function eventbystatus(Request $request)
-    {
-        $validate = Validator::make($request->all(), [
-            'event_status' => 'required',
-        ]);
-        if ($validate->fails()) {
-            return response()->json($validate->errors(), 400);
-        }
+    
+      public function eventbystatus(Request $request){
+    		$validate = Validator::make($request->all(), [
+    	    	'event_status' 	=> 'required',
+    		]);
+    		if ($validate->fails()) {
+    			return response()->json($validate->errors(), 400);
+    		}
 
         $events = DB::table('event')
-            ->where('event_status', $request->event_status)
-            ->orderBy('event_id', 'DESC')
+            ->where('event_status',$request->event_status)
+             ->orderBy('event_id','DESC')
             ->paginate(30);
 
         $imagepath = URL::to('/') . '/public/events';
         return $events->isEmpty()
             ? response()->json(['message' => 'no event available'], 404)
             : response()->json(['data' => $events, 'imagepath' => $imagepath, 'message' => 'Event List',], 200);
-    }
-
-    public function approvedeclineevent(Request $request)
-    {
-        $validate = Validator::make($request->all(), [
-            'event_id' => 'required',
-            'event_status' => 'required',
-        ]);
-        if ($validate->fails()) {
-            return response()->json($validate->errors(), 400);
-        }
-        $save = DB::table('event')
-            ->where('event_id', '=', $request->event_id)
-            ->update([
-                'event_status' => $request->event_status
-            ]);
-        if ($save) {
-            return response()->json(['message' => 'EventUpdated Successfully'], 200);
-        } else {
-            return response()->json("Oops! Something Went Wrong", 400);
-        }
-    }
-
-    public function eventbymonthyear(Request $request)
+    	}
+   
+         public function approvedeclineevent(Request $request){
+    		$validate = Validator::make($request->all(), [
+    	    	'event_id' 	    => 'required',
+    	    	'event_status' 	=> 'required',
+    		]);
+    		if ($validate->fails()) {
+    			return response()->json($validate->errors(), 400);
+    		}
+    		$save  = DB::table('event')
+    		->where('event_id','=',$request->event_id)
+    		->update(['event_status' => $request->event_status
+    		 ]);
+    		if($save){
+    			return response()->json(['message' => 'EventUpdated Successfully'],200);
+    		}else{
+    			return response()->json("Oops! Something Went Wrong", 400);
+    		}
+    	}
+    	
+    	 public function eventbymonthyear(Request $request)
     {
         $validate = Validator::make($request->all(), [
             'event_month' => 'required',
@@ -551,4 +554,5 @@ class eventcontroller extends Controller
         return response()->json(['events' => $events, 'message' => 'All events'], 200);
     }
 
+   
 }

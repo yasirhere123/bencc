@@ -49,6 +49,8 @@ Route::any('/eventbystatus', [eventcontroller::class, 'eventbystatus']);
 Route::any('/approvedeclineevent', [eventcontroller::class, 'approvedeclineevent']);
 Route::any('/eventbymonthyear', [eventcontroller::class, 'eventbymonthyear']);
 Route::any('/eventbydate', [eventcontroller::class, 'eventbydate']);
+Route::any('/createevent', [eventcontroller::class, 'createevent']);
+
 
 
 
